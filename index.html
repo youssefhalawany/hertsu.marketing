@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hertsu Marketing Portal — Student Union (v1.2 — Sign‑in only)</title>
+<meta name="color-scheme" content="dark light" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='20' fill='%23f0245c'/%3E%3Cpath fill='%23fff' d='M32 86V42h12l20 21 20-21h12v44H84V64L64 85 44 64v22z'/%3E%3C/svg%3E" />
+
+<!-- ========== Base Dark, Responsive, Aligned CSS (no external deps) ========== -->
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#121621; --panel-2:#0f1320; --muted:#8d98ad; --text:#e7ebf5;
+    --primary:#f0245c; --primary-600:#d81f52; --primary-700:#b11945;
+    --ok:#1dd1a1; --warn:#feca57; --err:#ff6b6b; --line:#1f2433; --ring:0 0 0 3px color-mix(in oklab, var(--primary) 35%, transparent);
+    --radius:12px; --shadow:0 10px 30px rgba(0,0,0,.35); --shadow-sm:0 6px 18px rgba(0,0,0,.28);
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    --gap: 1rem; --h: 42px; /* unified control height */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:linear-gradient(180deg,#0b0d12 0%,#0b0d12 40%,#0d111b 100%);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .hidden{display:none!important}
+  .soft{color:var(--muted)}
+  .brand{color:var(--primary)}
+  .grid{display:grid;gap:var(--gap)}
+  .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .grid.responsive{grid-template-columns:1fr}
+  @media(min-width:900px){.grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%, var(--panel-2) 100%); border:1px solid #1b2133; border-radius:var(--radius); box-shadow:var(--shadow); padding:1rem}
+  .hover-rise{transition:transform .2s ease, box-shadow .2s ease}
+  .hover-rise:hover{transform:translateY(-2px);box-shadow:0 14px 36px rgba(0,0,0,.35)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,#1f2433,transparent);margin:.8rem 0}
+
+  .btn{
+    display:inline-grid;place-items:center;gap:.5rem;min-height:var(--h);padding:.55rem .9rem;border-radius:10px;border:1px solid transparent;
+    background:linear-gradient(180deg,var(--primary) 0%, var(--primary-600) 100%); color:#fff; font-weight:700; cursor:pointer;
+    transition:transform .06s ease, filter .2s ease, box-shadow .2s ease; box-shadow:0 8px 20px rgba(240,36,92,.25);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn.secondary{background:linear-gradient(180deg,#1b2337,#161c2d);border-color:#242b3e;color:#eaf0ff}
+  .btn.ghost{background:transparent;border-color:#2b3248}
+  .btn.warn{background:linear-gradient(180deg,#ff7a59,#f25757)}
+  .btn.ok{background:linear-gradient(180deg,#1dd1a1,#10b981)}
+  .btn.block{width:100%}
+  .btn[disabled]{opacity:.65;cursor:not-allowed}
+  .btn.loading{position:relative;pointer-events:none}
+  .btn.loading::after{
+    content:""; position:absolute; right:10px; width:16px; height:16px; border:3px solid #2b334b; border-top-color:#fff; border-radius:50%; animation:spin 1s linear infinite;
+  }
+
+  .input, select, textarea{
+    width:100%; background:#0f1320; color:var(--text); border:1px solid #222a3d; border-radius:10px; padding:.7rem .85rem; outline:none;
+    min-height:var(--h); transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  textarea{min-height:calc(var(--h) * 1.8); resize:vertical}
+  .input:focus, select:focus, textarea:focus{border-color:var(--primary);box-shadow:var(--ring)}
+  ::placeholder{color:#9aa5bd}
+  label{display:inline-block;margin:0 0 .35rem .1rem;font-size:.92rem;color:#d6def7}
+
+  .badge{display:inline-flex;align-items:center;gap:.4rem;border-radius:999px;padding:.2rem .55rem;font-size:.75rem;border:1px solid #2a3045;background:#0f1423}
+  .badge.ok{border-color:color-mix(in oklab, var(--ok) 70%, transparent);color:var(--ok)}
+  .badge.warn{border-color:color-mix(in oklab, var(--warn) 70%, transparent);color:var(--warn)}
+  .badge.err{border-color:color-mix(in oklab, var(--err) 70%, transparent);color:var(--err)}
+
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid #1d2436;padding:.65rem .6rem;text-align:left;vertical-align:middle}
+  .table th{font-size:.85rem;color:#a7b0c5}
+  .table tr:hover td{background:#0e1321}
+  .pill{border-radius:999px;padding:.15rem .5rem;font-size:.75rem;border:1px solid #273052}
+
+  /* ====== LAYOUT (fixed alignment + Safari grid fix) ====== */
+  .app{display:grid;grid-template-columns:280px minmax(0,1fr);gap:1rem;min-height:100vh;width:100%}
+  .sidebar{position:sticky;top:0;height:100vh;padding:1rem;background:linear-gradient(180deg,#0e1220,#0b0f1d);border-right:1px solid #151c2d}
+  .main{padding:1rem 1.25rem;min-width:0} /* min-width:0 fixes Safari shrinking/overflow */
+  .topbar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:1rem;justify-content:space-between;padding:.7rem 1rem;margin:-.5rem -1rem 1rem;background:linear-gradient(180deg,#0b0f1d,#0d1220);border:1px solid #151c2d;border-radius:12px;box-shadow:var(--shadow-sm)}
+  .search{min-width:220px;max-width:560px;flex:1}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#232a45,#1b2238);border:1px solid #283050}
+  .nav-item{display:grid;grid-template-columns:24px 1fr;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:10px;color:#d7dff7}
+  .nav-item span.nav-ico{display:inline-grid;place-items:center;width:24px;height:24px}
+  .nav-item:hover{background:#121a2c}
+  .nav-item.active{background:linear-gradient(90deg,rgba(240,36,92,.15),transparent);border:1px solid rgba(240,36,92,.35);color:#fff}
+
+  /* Mobile drawer */
+  .hamburger{display:none}
+  .overlay{display:none}
+  @media(max-width:900px){
+    .app{grid-template-columns:1fr}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:84vw;transform:translateX(-100%);transition:transform .25s ease;z-index:20}
+    .sidebar.open{transform:none}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);display:none}
+    .overlay.show{display:block}
+    .hamburger{display:inline-grid}
+  }
+
+  /* ====== CALENDAR ====== */
+  .cal-header{display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+  .cal-grid{display:grid;grid-template-columns:repeat(7, minmax(0,1fr));gap:.5rem;width:100%}
+  .cal-cell{border:1px solid #1b2133;border-radius:10px;min-height:120px;background:linear-gradient(180deg,#0e1322,#0c1120);padding:.55rem;display:flex;flex-direction:column;gap:.4rem}
+  .cal-cell .day{font-size:.8rem;color:#9aa5bd;display:flex;align-items:center;justify-content:space-between}
+  .evt{border:1px solid #2a3050;background:#141a28;border-left:4px solid var(--primary);border-radius:8px;padding:.35rem .45rem;font-size:.82rem;display:flex;justify-content:space-between;gap:.5rem}
+  .evt .title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px}
+  .evt .platform{font-size:.72rem;opacity:.85}
+  .view-switch .btn{min-height:36px;padding:.35rem .6rem}
+  /* Mobile: scrollable month grid + default week view */
+  @media(max-width:740px){
+    .cal-grid{grid-template-columns:repeat(7,minmax(220px,1fr));overflow-x:auto;padding-bottom:.5rem}
+    .cal-cell{min-width:220px}
+  }
+
+  /* Toasts & Modals */
+  .toast-wrap{position:fixed;right:16px;bottom:16px;display:grid;gap:.6rem;z-index:50}
+  .toast{background:#121a2d;border:1px solid #263052;border-left:4px solid var(--primary);color:#e9efff;border-radius:10px;padding:.7rem .9rem;min-width:260px;box-shadow:var(--shadow)}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);display:none;align-items:center;justify-content:center;z-index:60}
+  .modal-backdrop.show{display:flex}
+  .modal{width:min(680px,92vw);background:#0f1423;border:1px solid #253050;border-radius:14px;box-shadow:var(--shadow);padding:1rem}
+  .load{position:fixed;inset:0;display:grid;place-items:center;background:rgba(7,9,14,.75);backdrop-filter:blur(2px);z-index:70}
+  .spin{width:18px;height:18px;border:3px solid #2b334b;border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Print */
+  @media print{
+    body{background:#000}
+    .sidebar,.topbar,.btn,.overlay,.modal-backdrop,.toast-wrap{display:none!important}
+    .card, .cal-cell{break-inside:avoid;page-break-inside:avoid}
+    .print-target{padding:10mm}
+    .print-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--primary);margin-bottom:8mm}
+    .print-header h1{font-size:20pt;margin:0}
+    .print-header .meta{font-size:10pt;color:#cbd5e1}
+  }
+</style>
+
+<!-- ========== Elegant Interactive + Alignment Upgrades (design-only) ========== -->
+<style id="design-overrides">
+/* Ambient animated glow (GPU-light, sits under content, never blocks text) */
+@media (prefers-reduced-motion:no-preference) {
+  body::before{
+    content:""; position:fixed; inset:-20% -10% auto -10%; height:60vh; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(50% 60% at 25% 40%, rgba(240,36,92,.18), transparent 60%),
+      radial-gradient(60% 50% at 85% 20%, rgba(255,95,142,.12), transparent 60%);
+    filter:blur(36px) saturate(115%); animation:bgFloat 16s cubic-bezier(.2,.8,.2,1) infinite alternate;
+  }
+  @keyframes bgFloat{0%{transform:translate3d(-5%,-3%,0)}100%{transform:translate3d(6%,2%,0)}}
+}
+
+/* iPhone & laptop safe-area + full-height sign-in */
+#authPage{min-height:100dvh; padding-top:max(2rem, env(safe-area-inset-top)); padding-bottom:max(2rem, env(safe-area-inset-bottom))}
+@media (max-width:900px){ #authPage > .card{grid-template-columns:1fr !important} }
+
+/* Sticky topbar polish + safe-area */
+.topbar{
+  padding-top:calc(.7rem + env(safe-area-inset-top));
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00)),
+    linear-gradient(180deg,#0b0f1d,#0d1220);
+  backdrop-filter:saturate(120%) blur(6px);
+}
+
+/* Sidebar momentum scroll + active accent bar */
+.sidebar{-webkit-overflow-scrolling:touch}
+.nav-item{position:relative; transition:background .25s ease, transform .12s ease}
+.nav-item:hover{transform:translateX(2px)}
+.nav-item.active::before{
+  content:""; position:absolute; left:-1px; top:6px; bottom:6px; width:3px;
+  background:linear-gradient(180deg,var(--primary),var(--primary-700));
+  border-radius:4px; box-shadow:0 0 16px rgba(240,36,92,.5);
+}
+
+/* Cards glass polish + tilt-ready */
+.card{
+  background:linear-gradient(180deg,
+    color-mix(in oklab, var(--panel) 92%, transparent),
+    color-mix(in oklab, var(--panel-2) 92%, transparent)
+  );
+  border:1px solid color-mix(in oklab, #1b2133 85%, transparent);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease; will-change:transform;
+}
+.card.hover-rise:hover{ box-shadow:0 16px 48px rgba(0,0,0,.45) }
+
+/* Buttons: lifted hover + ripple */
+.btn{ position:relative; overflow:hidden; touch-action:manipulation }
+.btn:hover{ filter:brightness(1.05); box-shadow:0 18px 44px rgba(240,36,92,.5) }
+.btn.secondary:hover{ box-shadow:0 14px 36px rgba(0,0,0,.4) }
+.btn.ghost:hover{ border-color:#32405d }
+.btn .ripple{
+  position:absolute; border-radius:50%; transform:translate(-50%,-50%); pointer-events:none;
+  background:radial-gradient(circle, rgba(255,255,255,.35), rgba(255,255,255,.15) 40%, transparent 60%);
+  animation:ripple .6s ease-out forwards;
+}
+@keyframes ripple{from{width:0;height:0;opacity:.8}to{width:220px;height:220px;opacity:0}}
+
+/* Reveal animation */
+.reveal{opacity:0; transform:translateY(12px); filter:blur(6px)}
+.reveal.in{opacity:1; transform:none; filter:none; transition:opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1), filter .7s}
+
+/* Modal entrance */
+.modal-backdrop.show .modal{ animation:pop .18s ease-out }
+@keyframes pop{from{transform:translateY(6px) scale(.98); opacity:.5}to{transform:none; opacity:1}}
+
+/* Tables: mobile horizontal scroll wrapper */
+.scroll-x{ overflow-x:auto; -webkit-overflow-scrolling:touch }
+.scroll-x > .table{ min-width:720px }
+
+/* Calendar: nicer hover & spacing */
+.cal-cell{ transition:border-color .2s ease, transform .2s ease }
+.cal-cell:hover{ border-color:color-mix(in oklab, var(--primary) 35%, #1b2133); transform:translateY(-2px) }
+.evt{ transition:transform .15s ease, background .2s ease }
+.evt:hover{ transform:translateY(-1px); background:#151c28 }
+
+/* Slightly responsive heading scale */
+h2{ font-size:clamp(1.2rem, 2.4vw, 1.6rem) }
+
+/* Reduced motion support */
+@media (prefers-reduced-motion:reduce){
+  body::before{ animation:none }
+  .reveal{ opacity:1; transform:none; filter:none }
+  .btn .ripple{ display:none }
+}
+</style>
+
+<!-- ========== Firebase ESM import map ========== -->
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js",
+    "firebase/database": "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<!-- ========================== AUTH (SIGN‑IN ONLY) ========================== -->
+<section id="authPage" style="min-height:100vh;display:grid;place-items:center;padding:2rem">
+  <div class="card hover-rise" style="width:min(1020px,95vw);display:grid;grid-template-columns:1.05fr .95fr;gap:var(--gap)">
+    <div class="card" style="background:linear-gradient(180deg,#0e1426,#0b101d)">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <svg width="38" height="38" viewBox="0 0 128 128"><rect width="128" height="128" rx="20" fill="#f0245c"/><path fill="#fff" d="M32 86V42h12l20 21 20-21h12v44H84V64L64 85 44 64v22z"/></svg>
+        <div>
+          <div style="letter-spacing:.08em;font-weight:800">HERTSU</div>
+          <div class="brand" style="font-size:1.35rem;font-weight:900">Marketing Portal</div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p class="soft" style="max-width:62ch">
+        Sign in with your email. If you don’t have an account, ask the Admin to add you. Or email studentunion@gaf.edu.eg .
+      </p>
+      <ul class="soft" style="line-height:1.9;margin:.3rem 0 0">
+        <li>🔒 Email &amp; Password (no self‑registration)</li>
+        <li>🗓️ Real‑time Calendar (Month / Week / Day)</li>
+        <li>📚 Content Library with filters + PDF</li>
+        <li>👥 Role‑based access (Admin/Editor/Member)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:.2rem 0 .5rem">Sign in</h2>
+      <div class="grid">
+        <div>
+          <label>Email</label>
+          <input id="authEmail" class="input" placeholder="you@hertsu.com" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus />
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="authPassword" type="password" class="input" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+      </div>
+      <div class="grid cols-2" style="margin-top:.8rem">
+        <button id="btnSignIn" class="btn">Sign In</button>
+        <button id="btnForgot" class="btn ghost" type="button">Forgot Password</button>
+      </div>
+      <div id="authError" class="soft" style="margin-top:.7rem;color:#ff8a8a;min-height:1.2em"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================== APP ========================== -->
+<section id="app" class="app hidden">
+
+  <!-- Mobile drawer overlay -->
+  <div id="drawerOverlay" class="overlay"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem">
+      <svg width="34" height="34" viewBox="0 0 128 128"><rect width="128" height="128" rx="20" fill="#f0245c"/><path fill="#fff" d="M32 86V42h12l20 21 20-21h12v44H84V64L64 85 44 64v22z"/></svg>
+      <div style="line-height:1">
+        <div style="font-size:.85rem;letter-spacing:.08em;color:#cbd3ea">STUDENT UNION</div>
+        <div class="brand" style="font-size:1.15rem;font-weight:900">Marketing Portal</div>
+      </div>
+    </div>
+
+    <nav id="nav" class="grid">
+      <a data-route="dashboard" class="nav-item active"><span class="nav-ico">🏠</span><span>Dashboard</span></a>
+      <a data-route="calendar" class="nav-item"><span class="nav-ico">🗓️</span><span>Calendar</span></a>
+      <a data-route="content" class="nav-item"><span class="nav-ico">📚</span><span>Content Library</span></a>
+      <a data-route="team" class="nav-item admin-only hidden"><span class="nav-ico">👥</span><span>Team Management</span></a>
+      <a data-route="settings" class="nav-item"><span class="nav-ico">⚙️</span><span>Settings</span></a>
+    </nav>
+
+    <div class="divider"></div>
+
+    <div class="card" style="display:grid;gap:.6rem">
+      <div class="soft" style="font-size:.85rem">Quick Actions</div>
+      <button id="quickAddContent" class="btn">＋ Add Content</button>
+      <button id="quickExportAll" class="btn secondary">⇩ Download All Data</button>
+      <button id="btnSignOut" class="btn ghost">Sign Out</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="soft" style="font-size:.8rem">Editors: Baraa · Rahma · Malak · Armia · Aysha · Mayar · Habiba</div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="btn ghost hamburger" id="btnToggleSidebar" aria-label="Open menu">☰</button>
+      <div class="search">
+        <input id="globalSearch" class="input" placeholder="Search campaigns or keywords…" />
+      </div>
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <div id="userRoleBadge" class="badge">ROLE</div>
+        <div style="display:grid;gap:0;text-align:right">
+          <div id="userNameLabel" style="font-weight:700">User</div>
+          <div id="userEmailLabel" class="soft" style="font-size:.85rem">email</div>
+        </div>
+        <div class="avatar" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <!-- ========== DASHBOARD ========== -->
+    <section data-page="dashboard" class="grid responsive">
+      <div class="grid cols-3 responsive">
+        <div class="card hover-rise"><div class="soft">Total Content</div><div id="statTotalContent" style="font-size:1.8rem;font-weight:900">0</div></div>
+        <div class="card hover-rise"><div class="soft">Upcoming (7 days)</div><div id="statUpcoming" style="font-size:1.8rem;font-weight:900">0</div></div>
+        <div class="card hover-rise"><div class="soft">Active Members</div><div id="statMembers" style="font-size:1.8rem;font-weight:900">0</div></div>
+      </div>
+
+      <div class="grid cols-2 responsive">
+        <div class="card">
+          <h3 style="margin-top:.2rem">Recent Content</h3>
+          <table class="table" id="recentContentTable">
+            <thead><tr><th>Scheduled</th><th>Idea</th><th>Platform</th><th>Campaign</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="card admin-only hidden">
+          <h3 style="margin-top:.2rem">System Logs (Admin)</h3>
+          <div id="logs" style="max-height:320px;overflow:auto;display:grid;gap:.5rem"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== CALENDAR ========== -->
+    <section data-page="calendar" class="hidden">
+      <div class="card print-target" id="calendarPrintScope">
+        <div class="print-header hidden">
+          <h1>Marketing Calendar</h1>
+          <div class="meta">Exported from Hertsu Marketing Portal — <span id="printCalendarRange"></span></div>
+        </div>
+
+        <div class="cal-header">
+          <div style="display:flex;gap:.4rem;align-items:center">
+            <button id="calPrev" class="btn secondary" title="Previous">◀</button>
+            <button id="calToday" class="btn ghost">Today</button>
+            <button id="calNext" class="btn secondary" title="Next">▶</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <h2 id="calLabel" style="margin:0"></h2>
+            <div id="calStats" class="soft"></div>
+          </div>
+          <div class="view-switch" style="display:flex;gap:.4rem;align-items:center">
+            <button data-view="month" class="btn ghost">Month</button>
+            <button data-view="week" class="btn ghost">Week</button>
+            <button data-view="day" class="btn ghost">Day</button>
+            <button id="btnAddEvent" class="btn admin-editor-only">＋ Add</button>
+            <button id="btnCalPDF" class="btn secondary">Save Calendar as PDF</button>
+          </div>
+        </div>
+
+        <div id="calendarContainer"></div>
+      </div>
+    </section>
+
+    <!-- ========== CONTENT LIBRARY ========== -->
+    <section data-page="content" class="hidden">
+      <div class="card print-target" id="contentPrintScope">
+        <div class="print-header hidden">
+          <h1>All Content</h1>
+          <div class="meta">Exported from Hertsu Marketing Portal — <span id="printContentRange"></span></div>
+        </div>
+
+        <div class="grid cols-4 responsive" style="align-items:end">
+          <div><label>Date From</label><input id="filterFrom" type="date" class="input" /></div>
+          <div><label>Date To</label><input id="filterTo" type="date" class="input" /></div>
+          <div><label>Campaign</label><input id="filterCampaign" class="input" placeholder="Campaign name" /></div>
+          <div><label>Platform</label>
+            <select id="filterPlatform"><option value="">All</option><option>Instagram</option><option>YouTube</option><option>TikTok</option></select>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.5rem;margin:.8rem 0 1rem;flex-wrap:wrap">
+          <button id="btnApplyFilters" class="btn ghost">Apply Filters</button>
+          <button id="btnClearFilters" class="btn secondary">Clear</button>
+          <button id="btnContentPDF" class="btn secondary">Save Filtered Content as PDF</button>
+          <button id="btnAddContent" class="btn admin-editor-only">＋ Add Content</button>
+          <button id="btnExportCSV" class="btn ghost">Export CSV</button>
+        </div>
+
+        <table class="table" id="contentTable">
+          <thead>
+            <tr>
+              <th style="min-width:160px">Scheduled</th>
+              <th>Idea</th>
+              <th>Platform</th>
+              <th>Campaign</th>
+              <th>Description</th>
+              <th>Reference Link</th>
+              <th class="admin-editor-only">Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== TEAM MANAGEMENT (Admin) ========== -->
+    <section data-page="team" class="hidden">
+      <div class="card">
+        <h3 style="margin:.2rem 0 1rem">Team Management</h3>
+        <div class="grid cols-3 responsive">
+          <div class="card">
+            <h4>Invite / Add Record</h4>
+            <div class="grid">
+              <div><label>Name</label><input id="tmName" class="input" placeholder="Full name"></div>
+              <div><label>Email</label><input id="tmEmail" class="input" placeholder="name@hertsu.com"></div>
+            </div>
+            <div class="grid" style="margin-top:.6rem">
+              <div><label>Role</label>
+                <select id="tmRole"><option value="member">Member (view‑only)</option><option value="editor">Editor</option><option value="admin">Admin</option></select>
+              </div>
+              <div><label>Status</label>
+                <select id="tmActive"><option value="true" selected>Active</option><option value="false">Deactivated</option></select>
+              </div>
+            </div>
+            <div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">
+              <button id="btnTMAdd" class="btn">Add / Update Record</button>
+              <button id="btnTMSeedEditors" class="btn ghost">Quick‑add Editors (@hertsu.com)</button>
+            </div>
+            <small class="soft">Note: Create the user in <strong>Firebase Auth</strong> first (email &amp; password), then add/confirm here.</small>
+          </div>
+
+          <div class="card" style="grid-column:span 2">
+            <h4>All Users</h4>
+            <table class="table" id="usersTable">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Admin Controls</h4>
+        <div class="soft">Only one Admin is allowed. Use <strong>Make Admin</strong> to transfer adminship.</div>
+        <div id="adminMeta" class="chip" style="margin-top:.5rem"></div>
+      </div>
+
+      <div class="card">
+        <h4>Security Rules (Realtime Database)</h4>
+        <details>
+          <summary>Click to view — paste into Firebase ▶ Realtime Database ▶ Rules</summary>
+          <pre id="rulesBlock" style="white-space:pre-wrap; font-family:var(--mono); font-size:.85rem; background:#0a0f1a; border:1px solid #20263a; padding:1rem; border-radius:10px"></pre>
+        </details>
+      </div>
+    </section>
+
+    <!-- ========== SETTINGS ========== -->
+    <section data-page="settings" class="hidden">
+      <div class="card">
+        <h3 style="margin:.2rem 0 1rem">Settings</h3>
+        <div class="grid cols-3 responsive">
+          <div><label>Brand Color</label><input id="brandColor" class="input" type="color" value="#f0245c" /></div>
+          <div><label>Export All Data</label><button id="btnExportAll" class="btn secondary block">Download JSON</button></div>
+          <div><label>Sign Out</label><button id="btnSignOut2" class="btn ghost block">Sign Out</button></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</section>
+
+<!-- ========================== MODALS & TOASTS ========================== -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <h3 id="modalTitle">Add Content</h3>
+    <div class="grid">
+      <div><label>Content Idea</label><input id="mIdea" class="input" /></div>
+      <div><label>Platform</label><select id="mPlatform"><option>Instagram</option><option>YouTube</option><option>TikTok</option></select></div>
+      <div><label>Related Campaign</label><input id="mCampaign" class="input" /></div>
+      <div><label>Reference Link</label><input id="mLink" class="input" placeholder="https://…" /></div>
+      <div style="grid-column:span 2"><label>Idea Description</label><textarea id="mDesc" class="input" rows="3"></textarea></div>
+      <div><label>Scheduled Date</label><input id="mDate" type="date" class="input" /></div>
+      <div><label>Time</label><input id="mTime" type="time" class="input" /></div>
+    </div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap">
+      <button id="mDelete" class="btn warn hidden">Delete</button>
+      <button id="mCancel" class="btn ghost">Cancel</button>
+      <button id="mSave" class="btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastWrap" class="toast-wrap"></div>
+<div id="loadingOverlay" class="load hidden" aria-live="polite">
+  <div style="display:grid;gap:.7rem;place-items:center"><div class="spin"></div><div class="soft">Working…</div></div>
+</div>
+
+<!-- ========================== APP SCRIPT (ESM) ========================== -->
+<script type="module">
+  import { initializeApp } from "firebase/app";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+    signOut, sendPasswordResetEmail, setPersistence, browserLocalPersistence
+  } from "firebase/auth";
+  import {
+    getDatabase, ref, set, get, update, remove, push, child, onValue,
+    serverTimestamp, runTransaction
+  } from "firebase/database";
+
+  // ---- Firebase init (your project) ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyC2Cc7J3mUfAngrGtd96OCj4rDtD8-NDDo",
+    authDomain: "marketing-523d5.firebaseapp.com",
+    databaseURL: "https://marketing-523d5-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "marketing-523d5",
+    storageBucket: "marketing-523d5.firebasestorage.app",
+    messagingSenderId: "409383893625",
+    appId: "1:409383893625:web:a2d8983a44784774eb32a8"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  // Persist sessions
+  await setPersistence(auth, browserLocalPersistence);
+  auth.languageCode = navigator.language || 'en';
+
+  // ---- DOM helpers ----
+  const $ = (s, r=document)=> r.querySelector(s);
+  const $$ = (s, r=document)=> [...r.querySelectorAll(s)];
+  const fmtDate = (d) => new Date(d).toLocaleString([], {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const ymd = (date) => { const d=new Date(date); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; };
+  const toDateInput = (ms)=> ymd(ms);
+  const fromDateTimeInputs = (dateStr, timeStr) => new Date(`${dateStr}T${timeStr||"00:00"}`).getTime();
+
+  // ---- State ----
+  let currentUser=null, profile=null, contentMap={}, usersMap={}, adminUid=null;
+  let calView='month', calAnchor=new Date(); let modalEditingId=null; let saveTimers={}; let listenersStarted=false;
+
+  // ---- UI refs ----
+  const authPage=$("#authPage"), appRoot=$("#app"), sidebar=$("#sidebar"), overlay=$("#drawerOverlay"), toastWrap=$("#toastWrap"), loadingOverlay=$("#loadingOverlay");
+
+  // ---- Toasts/Loading ----
+  function toast(msg, type='info', ms=3000){ const el=document.createElement('div'); el.className='toast'; el.innerHTML=`<strong>${type==='ok'?'✅':type==='err'?'⚠️':'📣'} ${msg}</strong>`; toastWrap.appendChild(el); setTimeout(()=> el.remove(), ms); }
+  const loading=(on)=> loadingOverlay.classList.toggle('hidden', !on);
+
+  // ---- Errors ----
+  function errText(e){ const c=(e&&e.code)||''; if(c.includes('invalid-email'))return'Enter a valid email.'; if(c.includes('user-not-found'))return'No account found for this email.'; if(c.includes('wrong-password'))return'Incorrect password.'; if(c.includes('too-many-requests'))return'Too many attempts. Try again shortly.'; if(c.includes('network-request-failed'))return'Network error. Check connection.'; return e?.message||'Something went wrong.'; }
+  const emailOK=(s)=> /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s||''); const passOK=(s)=> (s||'').length>=6;
+
+  // ---- Sign‑in only ----
+  function setAuthUI(disabled,label){ $("#btnSignIn").disabled=disabled; $("#btnForgot").disabled=disabled; $("#btnSignIn").classList.toggle('loading',disabled); if(label) $("#btnSignIn").textContent=label; }
+  $("#authPassword").addEventListener('keydown',(e)=>{ if(e.key==='Enter'){ $("#btnSignIn").click(); } });
+  $("#btnSignIn").onclick = async ()=>{
+    const email=($("#authEmail").value||'').trim().toLowerCase(); const pass=($("#authPassword").value||'').trim();
+    if(!emailOK(email)) return $("#authError").textContent='Enter a valid email.'; if(!passOK(pass)) return $("#authError").textContent='Password must be at least 6 characters.'; if(!navigator.onLine) return $("#authError").textContent='You are offline.';
+    try{ setAuthUI(true,'Signing in…'); loading(true); const cred=await signInWithEmailAndPassword(auth,email,pass); $("#authError").textContent=''; await postLoginSetup(cred.user); }catch(e){ $("#authError").textContent=errText(e); } finally{ setAuthUI(false,'Sign In'); loading(false); }
+  };
+  $("#btnForgot").onclick = async ()=>{
+    const email=($("#authEmail").value||'').trim().toLowerCase(); if(!emailOK(email)) return $("#authError").textContent='Enter your email above, then click Forgot Password.'; try{ setAuthUI(true); loading(true); await sendPasswordResetEmail(auth,email); toast("Password reset email sent.", "ok"); $("#authError").textContent=''; }catch(e){ $("#authError").textContent=errText(e); } finally{ setAuthUI(false); loading(false); }
+  };
+  $("#btnSignOut").onclick = ()=> signOut(auth); $("#btnSignOut2").onclick = ()=> signOut(auth);
+
+  onAuthStateChanged(auth, async (user)=>{
+    if(!user){ currentUser=null; profile=null; authPage.classList.remove('hidden'); appRoot.classList.add('hidden'); return; }
+    currentUser=user;
+    await ensureUserRecord(user);
+    const snap=await get(child(ref(db),`users/${user.uid}`)); profile=snap.exists()?snap.val():null;
+    if(profile && profile.active===false){ $("#authError").textContent="Your account is deactivated. Contact the Admin."; await signOut(auth); return; }
+    await bootstrapAdmin(user.uid);
+    const admSnap = await get(child(ref(db),`settings/adminUid`)); adminUid=admSnap.exists()?admSnap.val():null;
+
+    authPage.classList.add('hidden'); appRoot.classList.remove('hidden');
+    $("#userNameLabel").textContent = profile?.name || prettyName(user.email.split("@")[0]);
+    $("#userEmailLabel").textContent = user.email;
+    updateRoleBadges();
+    startListeners();
+    // Mobile default: show Week to keep things readable
+    if(matchMedia('(max-width:740px)').matches) { calView='week'; }
+    routeTo('calendar'); // open straight to calendar after sign-in
+    toast(`Welcome ${profile?.name || user.email}!`, 'ok');
+  });
+
+  async function postLoginSetup(user){ await ensureUserRecord(user); await bootstrapAdmin(user.uid); }
+
+  // ---- Create/update users DB record (no self registration; Auth account must exist) ----
+  function prettyName(local){ return local.split(/[._-]/).map(s=> s? s[0].toUpperCase()+s.slice(1) : '').join(' '); }
+  async function ensureUserRecord(user){
+    const uref=ref(db,`users/${user.uid}`); const snap=await get(uref);
+    const local = (user.email||'').split('@')[0].toLowerCase();
+    const editorNames=new Set(["baraa","rahma","malak","armia","aysha","mayar","habiba"]);
+    const suggestedRole = editorNames.has(local) ? "editor" : "member";
+    const displayName = user.displayName || prettyName(local);
+    if(!snap.exists()){
+      await set(uref,{ uid:user.uid, email:user.email, name:displayName, role:suggestedRole, active:true, createdAt: serverTimestamp(), lastLoginAt: serverTimestamp() });
+      await logAction('user_created',{uid:user.uid, name:displayName, suggestedRole});
+    }else{
+      await update(uref,{ lastLoginAt: serverTimestamp(), name: snap.val().name || displayName });
+    }
+  }
+
+  // First user becomes Admin
+  async function bootstrapAdmin(uid){
+    const sref=ref(db,`settings/adminUid`);
+    await runTransaction(sref,(cur)=>{ if(cur===null){ update(ref(db,`users/${uid}`),{role:'admin',active:true}); return uid; } return cur; });
+  }
+
+  function isAdmin(){ return profile?.role==='admin' && profile?.active!==false; }
+  function canEdit(){ return (profile?.role==='admin'||profile?.role==='editor') && profile?.active!==false; }
+  function updateRoleBadges(){
+    const role=profile?.role || 'member';
+    const badge=$("#userRoleBadge"); badge.textContent=role.toUpperCase(); badge.classList.remove('ok','warn','err');
+    if(role==='admin') badge.classList.add('ok'); else if(role==='editor') badge.classList.add('warn'); else badge.classList.add('err');
+    $$(".admin-only").forEach(el=> el.classList.toggle('hidden', !isAdmin()));
+    $$(".admin-editor-only").forEach(el=> el.classList.toggle('hidden', !canEdit()));
+    const teamNav=$(`[data-route="team"]`); if(teamNav) teamNav.classList.toggle('hidden', !isAdmin());
+  }
+
+  // ---- Live listeners ----
+  function startListeners(){
+    if(listenersStarted) return; listenersStarted=true;
+    onValue(ref(db,'content'),(snap)=>{ contentMap=snap.exists()?snap.val():{}; renderDashboard(); renderCalendar(); renderContentTable(); });
+    onValue(ref(db,'users'),(snap)=>{ usersMap=snap.exists()?snap.val():{}; if(isAdmin()) renderUsersTable(); $("#statMembers").textContent=String(Object.values(usersMap).filter(u=>u.active!==false).length); });
+    onValue(ref(db,'settings/adminUid'),(snap)=>{ adminUid=snap.val()||null; if(isAdmin()) $("#adminMeta").textContent = adminUid?`Current Admin UID: ${adminUid}`:'No Admin set'; });
+
+    // lightweight new-content notification
+    let lastSeen=Date.now();
+    onValue(ref(db,'content'),(snap)=>{
+      if(!snap.exists()) return;
+      const items=Object.values(snap.val()).sort((a,b)=> (b.createdAt||0)-(a.createdAt||0)).slice(0,3);
+      for(const c of items){ if(c.createdBy && c.createdBy!==currentUser?.uid && (c.createdAt||0) > lastSeen){ toast(`New content: “${c.idea}” (${c.platform})`,'info',3500); } }
+      lastSeen=Date.now();
+    });
+  }
+
+  // ---- Routing ----
+  $$("#nav .nav-item").forEach(a=>{
+    a.onclick=()=>{ $$("#nav .nav-item").forEach(n=> n.classList.remove('active')); a.classList.add('active'); routeTo(a.dataset.route); if(innerWidth<900){ sidebar.classList.remove('open'); overlay.classList.remove('show'); } };
+  });
+  function routeTo(route){ $$('[data-page]').forEach(p=> p.classList.add('hidden')); $(`[data-page="${route}"]`).classList.remove('hidden'); }
+  $("#btnToggleSidebar").onclick = ()=>{ sidebar.classList.add('open'); overlay.classList.add('show'); };
+  overlay.onclick = ()=>{ sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+
+  // ---- Dashboard ----
+  function renderDashboard(){
+    const list=Object.entries(contentMap||{}).map(([id,c])=>({id,...c}));
+    $("#statTotalContent").textContent=String(list.length);
+    const weekFrom=Date.now(),weekTo=weekFrom+7*86400000;
+    $("#statUpcoming").textContent=String(list.filter(c=> c.scheduledAt && c.scheduledAt>=weekFrom && c.scheduledAt<=weekTo).length);
+    const tbody=$("#recentContentTable tbody"); tbody.innerHTML='';
+    list.sort((a,b)=> (b.updatedAt||b.createdAt||0)-(a.updatedAt||a.createdAt||0)).slice(0,6).forEach(c=>{
+      const tr=document.createElement('tr'); tr.innerHTML=`<td>${c.scheduledAt?fmtDate(c.scheduledAt):'-'}</td><td>${escapeHtml(c.idea||'')}</td><td>${c.platform||''}</td><td>${escapeHtml(c.campaign||'')}</td>`; tbody.appendChild(tr);
+    });
+    if(isAdmin()){
+      onValue(ref(db,'logs'),(snap)=>{
+        const el=$("#logs"); el.innerHTML=''; if(!snap.exists()) return;
+        Object.values(snap.val()).sort((a,b)=> (b.at||0)-(a.at||0)).slice(0,25).forEach(lg=>{
+          const card=document.createElement('div'); card.className='card'; card.innerHTML=`<div style="display:flex;align-items:center;gap:.5rem"><span style="width:8px;height:8px;border-radius:50%;background:${lg.level==='err'?'var(--err)':lg.level==='warn'?'var(--warn)':'var(--ok)'};"></span><strong>${lg.action}</strong><span class="soft">• ${fmtDate(lg.at||Date.now())}</span></div><div class="soft" style="margin-top:.3rem">${escapeHtml(JSON.stringify(lg.details||{},null,0))}</div>`; el.appendChild(card);
+        });
+      });
+    }
+  }
+
+  // ---- Calendar ----
+  $("#calPrev").onclick=()=>shiftAnchor(-1); $("#calNext").onclick=()=>shiftAnchor(+1); $("#calToday").onclick=()=>{ calAnchor=new Date(); renderCalendar(); };
+  $$('.view-switch [data-view]').forEach(btn=> btn.onclick=()=>{ calView=btn.dataset.view; renderCalendar(); });
+
+  function shiftAnchor(dir){ if(calView==='month'){ calAnchor.setMonth(calAnchor.getMonth()+dir);} else if(calView==='week'){ calAnchor.setDate(calAnchor.getDate()+7*dir);} else { calAnchor.setDate(calAnchor.getDate()+dir);} renderCalendar(); }
+
+  function renderCalendar(){
+    const container=$("#calendarContainer"); container.innerHTML='';
+    const entries=Object.entries(contentMap||{}).map(([id,c])=>({id,...c})).filter(c=> !!c.scheduledAt);
+
+    if(calView==='month'){
+      const y=calAnchor.getFullYear(), m=calAnchor.getMonth();
+      const first=new Date(y,m,1), last=new Date(y,m+1,0);
+      const start=new Date(first); start.setDate(first.getDate()-((first.getDay()+6)%7));
+      const end=new Date(last); end.setDate(last.getDate()+(7-((last.getDay()+6)%7)-1));
+      $("#calLabel").textContent=first.toLocaleString([], {month:'long', year:'numeric'}); $("#printCalendarRange").textContent=$("#calLabel").textContent;
+
+      const grid=document.createElement('div'); grid.className='cal-grid';
+      for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+        const cell=document.createElement('div'); cell.className='cal-cell';
+        const inMonth=d.getMonth()===m; const dayHdr=document.createElement('div'); dayHdr.className='day'; dayHdr.innerHTML=`<span>${d.toLocaleString([], {weekday:'short'})}</span><strong>${d.getDate()}</strong>`; if(!inMonth) dayHdr.style.opacity=.5; cell.appendChild(dayHdr);
+
+        const dayStart=new Date(d); dayStart.setHours(0,0,0,0); const dayEnd=new Date(d); dayEnd.setHours(23,59,59,999);
+        const dayItems=entries.filter(c=> c.scheduledAt>=dayStart.getTime() && c.scheduledAt<=dayEnd.getTime()).sort((a,b)=> (a.scheduledAt||0)-(b.scheduledAt||0));
+        dayItems.slice(0,3).forEach(c=>{ const evt=document.createElement('div'); evt.className='evt'; evt.innerHTML=`<span class="title">${escapeHtml(c.idea||'')}</span><span class="platform">${c.platform||''}</span>`; evt.title=`${c.platform||''} • ${c.campaign||''}\n${c.description||''}`; evt.onclick=()=>openModal('edit',c); cell.appendChild(evt); });
+        if(dayItems.length>3){ const more=document.createElement('div'); more.className='soft'; more.style.fontSize='.8rem'; more.textContent=`+${dayItems.length-3} more`; cell.appendChild(more); }
+        cell.onclick=(e)=>{ if(e.target===cell && canEdit()) openModal('add',{scheduledAt:dayStart.getTime()}); };
+        grid.appendChild(cell);
+      }
+      container.appendChild(grid);
+      $("#calStats").textContent=`${entries.filter(c=> new Date(c.scheduledAt).getMonth()===m).length} posts`;
+
+    }else if(calView==='week'){
+      const monday=new Date(calAnchor); monday.setDate(monday.getDate()-((monday.getDay()+6)%7));
+      $("#calLabel").textContent=`Week of ${monday.toLocaleDateString([], {month:'short', day:'numeric'})}`; $("#printCalendarRange").textContent=`${ymd(monday)} → ${ymd(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()+6))}`;
+      const grid=document.createElement('div'); grid.className='cal-grid';
+      for(let i=0;i<7;i++){
+        const d=new Date(monday); d.setDate(monday.getDate()+i);
+        const cell=document.createElement('div'); cell.className='cal-cell';
+        const dayHdr=document.createElement('div'); dayHdr.className='day'; dayHdr.innerHTML=`<span>${d.toLocaleString([], {weekday:'short'})}</span><strong>${d.getDate()}</strong>`; cell.appendChild(dayHdr);
+        const s=new Date(d); s.setHours(0,0,0,0); const e=new Date(d); e.setHours(23,59,59,999);
+        const items=entries.filter(c=> c.scheduledAt>=s.getTime() && c.scheduledAt<=e.getTime()).sort((a,b)=> (a.scheduledAt||0)-(b.scheduledAt||0));
+        for(const c of items){ const evt=document.createElement('div'); evt.className='evt'; evt.innerHTML=`<span class="title">${escapeHtml(c.idea||'')}</span><span class="platform">${c.platform||''}</span>`; evt.onclick=()=>openModal('edit',c); cell.appendChild(evt); }
+        cell.onclick=(e)=>{ if(e.target===cell && canEdit()) openModal('add',{scheduledAt:s.getTime()}); };
+        grid.appendChild(cell);
+      }
+      container.appendChild(grid);
+      const d0=new Date(calAnchor); const m=new Date(d0); m.setDate(d0.getDate()-((d0.getDay()+6)%7)); const s=m.getTime(); const e=s+6*86400000+86399999;
+      $("#calStats").textContent=`${entries.filter(c=> c.scheduledAt>=s && c.scheduledAt<=e).length} posts`;
+
+    }else{ // day
+      const d=new Date(calAnchor); const label=d.toLocaleString([], {weekday:'long', month:'long', day:'numeric', year:'numeric'}); $("#calLabel").textContent=label; $("#printCalendarRange").textContent=label;
+      const s=new Date(d.setHours(0,0,0,0)).getTime(); const e=s+86399999;
+      const dayItems=entries.filter(c=> c.scheduledAt>=s && c.scheduledAt<=e).sort((a,b)=> (a.scheduledAt||0)-(b.scheduledAt||0));
+      const list=document.createElement('div'); list.className='grid';
+      if(canEdit()){ const addBtn=document.createElement('button'); addBtn.className='btn admin-editor-only'; addBtn.textContent='＋ Add Post'; addBtn.onclick=()=>openModal('add',{scheduledAt:s}); list.appendChild(addBtn); }
+      if(dayItems.length===0){ const empty=document.createElement('div'); empty.className='soft'; empty.textContent='No posts scheduled for this day.'; list.appendChild(empty); }
+      for(const c of dayItems){
+        const card=document.createElement('div'); card.className='card hover-rise';
+        card.innerHTML=`<div style="display:flex;justify-content:space-between;gap:.6rem;align-items:center"><div><div style="font-size:1.05rem;font-weight:700">${escapeHtml(c.idea||'')}</div><div class="soft">${c.platform||''} • ${escapeHtml(c.campaign||'')}</div></div><div class="soft">${fmtDate(c.scheduledAt)}</div></div><div class="divider"></div><div class="soft">${escapeHtml(c.description||'')}</div>${c.link?`<div style="margin-top:.4rem"><a class="link" href="${escapeAttr(c.link)}" target="_blank" rel="noreferrer">Reference →</a></div>`:''}<div style="display:flex;gap:.5rem;margin-top:.8rem;justify-content:flex-end" class="${canEdit()?'':'hidden'}"><button class="btn ghost" data-act="edit">Edit</button><button class="btn warn" data-act="del">Delete</button></div>`;
+        card.querySelector('[data-act="edit"]')?.addEventListener('click',()=>openModal('edit',c));
+        card.querySelector('[data-act="del"]')?.addEventListener('click',()=>deleteContent(c.id));
+        list.appendChild(card);
+      }
+      container.appendChild(list);
+      $("#calStats").textContent=`${dayItems.length} posts`;
+    }
+  }
+
+  // ---- Modal (Add/Edit Content) ----
+  const modal=$("#modalBackdrop"); $("#mCancel").onclick=()=>closeModal(); $("#mSave").onclick=()=>saveModal(); $("#mDelete").onclick=()=>{ if(modalEditingId){ deleteContent(modalEditingId); closeModal(); } };
+  $("#btnAddEvent").onclick=()=>openModal('add'); $("#btnAddContent").onclick=()=>openModal('add'); $("#quickAddContent").onclick=()=>openModal('add');
+  function openModal(kind,data={}){ if(!canEdit()) return toast("You don't have permission.",'err'); modal.classList.add('show'); $("#modalTitle").textContent=kind==='edit'?'Edit Content':'Add Content'; $("#mIdea").value=data.idea||''; $("#mPlatform").value=data.platform||'Instagram'; $("#mCampaign").value=data.campaign||''; $("#mLink").value=data.link||''; $("#mDesc").value=data.description||''; const dt=data.scheduledAt?new Date(data.scheduledAt):new Date(); $("#mDate").value=toDateInput(dt.getTime()); $("#mTime").value=dt.toTimeString().slice(0,5); modalEditingId=data.id||null; $("#mDelete").classList.toggle('hidden',!modalEditingId); }
+  function closeModal(){ modal.classList.remove('show'); modalEditingId=null; }
+  async function saveModal(){
+    const rec={ idea:$("#mIdea").value.trim(), platform:$("#mPlatform").value, campaign:$("#mCampaign").value.trim(), link:$("#mLink").value.trim(), description:$("#mDesc").value.trim(), scheduledAt:fromDateTimeInputs($("#mDate").value,$("#mTime").value), updatedAt:serverTimestamp(), createdBy:currentUser?.uid };
+    if(!rec.idea) return toast("Idea is required.", 'err');
+    loading(true);
+    try{
+      if(modalEditingId){ await update(ref(db,`content/${modalEditingId}`), rec); await logAction('content_updated',{id:modalEditingId, idea:rec.idea}); toast("Content updated.",'ok'); }
+      else{ const id=push(ref(db,'content')).key; await set(ref(db,`content/${id}`), {...rec, createdAt:serverTimestamp(), id}); await logAction('content_created',{id, idea:rec.idea}); toast("Content added.",'ok'); }
+      closeModal();
+    }catch(e){ toast(e.message,'err',4800); } finally{ loading(false); }
+  }
+  async function deleteContent(id){ if(!canEdit()) return toast("No permission.",'err'); if(!confirm("Delete this content?")) return; await remove(ref(db,`content/${id}`)); await logAction('content_deleted',{id}); toast("Deleted.",'ok'); }
+
+  // ---- Content table + filters + autosave ----
+  function renderContentTable(){
+    const tbody=$("#contentTable tbody"); tbody.innerHTML='';
+    const list=Object.entries(contentMap||{}).map(([id,c])=>({id,...c}));
+
+    const from=$("#filterFrom").value? new Date($("#filterFrom").value).getTime():null;
+    const to=$("#filterTo").value? new Date($("#filterTo").value).getTime()+86399999:null;
+    const camp=$("#filterCampaign").value.trim().toLowerCase();
+    const plat=$("#filterPlatform").value;
+    const q=$("#globalSearch").value.trim().toLowerCase();
+
+    const filtered=list.filter(c=>{
+      if(from && (!c.scheduledAt || c.scheduledAt<from)) return false;
+      if(to && (!c.scheduledAt || c.scheduledAt>to)) return false;
+      if(plat && c.platform!==plat) return false;
+      if(camp && !(c.campaign||'').toLowerCase().includes(camp)) return false;
+      if(q && !((c.idea||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q) || (c.campaign||'').toLowerCase().includes(q))) return false;
+      return true;
+    }).sort((a,b)=> (a.scheduledAt||0)-(b.scheduledAt||0));
+
+    for(const c of filtered){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td><input type="datetime-local" class="input" data-field="scheduledAt" value="${c.scheduledAt? new Date(c.scheduledAt).toISOString().slice(0,16) : ''}" ${canEdit()?'':'disabled'}></td>
+        <td contenteditable="${canEdit()}" data-field="idea">${escapeHtml(c.idea||'')}</td>
+        <td>${canEdit()? platformSelectHTML(c.platform) : `<span class="pill">${c.platform||''}</span>`}</td>
+        <td contenteditable="${canEdit()}" data-field="campaign">${escapeHtml(c.campaign||'')}</td>
+        <td contenteditable="${canEdit()}" data-field="description">${escapeHtml(c.description||'')}</td>
+        <td>${canEdit()? `<input class="input" data-field="link" value="${escapeAttr(c.link||'')}">` : (c.link? `<a class="link" href="${escapeAttr(c.link)}" target="_blank" rel="noreferrer">Open</a>`:'')}</td>
+        <td class="admin-editor-only ${canEdit()?'':'hidden'}"><button class="btn ghost" data-act="edit">Edit</button><button class="btn warn" data-act="del">Delete</button></td>`;
+      tr.querySelector('[data-field="scheduledAt"]')?.addEventListener('change',()=>{ const ms=tr.querySelector('[data-field="scheduledAt"]').value? new Date(tr.querySelector('[data-field="scheduledAt"]').value).getTime():null; debouncedSave(c.id,{scheduledAt:ms}); });
+      tr.querySelectorAll('[contenteditable="true"]').forEach(cell=> cell.addEventListener('input',()=> debouncedSave(c.id,{ [cell.dataset.field]:cell.textContent.trim() })));
+      tr.querySelector('select[data-field="platform"]')?.addEventListener('change',(e)=> debouncedSave(c.id,{platform:e.target.value}));
+      tr.querySelector('input[data-field="link"]')?.addEventListener('input',(e)=> debouncedSave(c.id,{link:e.target.value.trim()}));
+      tr.querySelector('[data-act="edit"]')?.addEventListener('click',()=>openModal('edit',c));
+      tr.querySelector('[data-act="del"]')?.addEventListener('click',()=>deleteContent(c.id));
+      tbody.appendChild(tr);
+    }
+    const fLabel=`${$("#filterFrom").value||'—'} → ${$("#filterTo").value||'—'}${plat?` • ${plat}`:''}${camp?` • ${camp}`:''}`;
+    $("#printContentRange").textContent=fLabel;
+  }
+  function platformSelectHTML(val){ const opts=['Instagram','YouTube','TikTok']; return `<select class="input" data-field="platform">${opts.map(o=> `<option ${o===val?'selected':''}>${o}</option>`).join('')}</select>`; }
+  function debouncedSave(id,patch){ if(!canEdit()) return; clearTimeout(saveTimers[id]); saveTimers[id]=setTimeout(async()=>{ try{ await update(ref(db,`content/${id}`),{...patch,updatedAt:serverTimestamp()}); }catch(e){ toast("Auto‑save failed: "+e.message,'err',5000); } },600); }
+  $("#btnApplyFilters").onclick=()=>renderContentTable();
+  $("#btnClearFilters").onclick=()=>{ $("#filterFrom").value=''; $("#filterTo").value=''; $("#filterCampaign").value=''; $("#filterPlatform").value=''; renderContentTable(); };
+  $("#globalSearch").addEventListener('input',()=>renderContentTable());
+
+  // ---- PDF / Export ----
+  $("#btnCalPDF").onclick=()=> printScope('calendarPrintScope','Marketing Calendar');
+  $("#btnContentPDF").onclick=()=> printScope('contentPrintScope','All Content (Filtered)');
+  function printScope(scopeId,title){ $(`#${scopeId} .print-header`)?.classList.remove('hidden'); document.title=title+" — Marketing Portal"; window.print(); setTimeout(()=> $(`#${scopeId} .print-header`)?.classList.add('hidden'),120); }
+  $("#btnExportAll").onclick=exportAllJSON; $("#quickExportAll").onclick=exportAllJSON; $("#btnExportCSV").onclick=exportCSV;
+  function exportAllJSON(){ const payload={ exportedAt:new Date().toISOString(), settings:{adminUid}, users:usersMap, content:contentMap }; downloadFile('marketing-portal-export.json', JSON.stringify(payload,null,2), 'application/json'); toast("JSON exported.", 'ok'); }
+  function exportCSV(){ const rows=[["id","scheduledAt","idea","platform","campaign","description","link","createdBy"]]; for(const [id,c] of Object.entries(contentMap||{})){ rows.push([id, c.scheduledAt? new Date(c.scheduledAt).toISOString():'', wrap(c.idea), c.platform||'', wrap(c.campaign), wrap(c.description), c.link||'', c.createdBy||'']); } const csv=rows.map(r=> r.map(x=> typeof x==='string' && /[",\n]/.test(x) ? `"${x.replace(/"/g,'""')}"` : x).join(',')).join('\n'); downloadFile('content.csv', csv, 'text/csv'); toast("CSV exported.", 'ok'); function wrap(s){ return (s||'').replace(/\n/g,' ');} }
+  function downloadFile(name,data,type){ const blob=new Blob([data],{type}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(url),500); }
+
+  // ---- Team Management ----
+  $("#btnTMAdd").onclick = async ()=>{
+    if(!isAdmin()) return toast("Only Admin can modify users.", 'err');
+    const name=$("#tmName").value.trim(); const email=$("#tmEmail").value.trim().toLowerCase(); const role=$("#tmRole").value; const active=$("#tmActive").value==='true';
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast("Valid email required.",'err');
+    loading(true);
+    try{
+      let uid=Object.keys(usersMap).find(k=> (usersMap[k].email||'').toLowerCase()===email);
+      if(!uid){ uid=`temp_${btoa(email).replace(/[^a-z0-9]/gi,'').slice(0,16)}_${Date.now()}`; }
+      await set(ref(db,`users/${uid}`),{ uid,email,name,role,active,updatedBy:currentUser.uid,updatedAt:serverTimestamp(),createdAt:usersMap[uid]?.createdAt||serverTimestamp() });
+      if(role==='admin'){ await transferAdmin(uid); }
+      await logAction('user_upsert',{uid,email,role,active}); toast("User record saved.",'ok');
+      $("#tmName").value=''; $("#tmEmail").value='';
+    }catch(e){ toast(e.message,'err',5000); } finally{ loading(false); }
+  };
+
+  // Quick‑add Editors with @hertsu.com
+  $("#btnTMSeedEditors").onclick = async ()=>{
+    if(!isAdmin()) return;
+    const names=["Baraa","Rahma","Malak","Armia","Aysha","Mayar","Habiba"];
+    for(const n of names){
+      const email = `${n.toLowerCase()}@hertsu.com`;
+      const uid = `seed_${n.toLowerCase()}`;
+      await set(ref(db,`users/${uid}`), { uid, email, name:n, role:"editor", active:true, createdAt: serverTimestamp() });
+    }
+    toast("Seeded Editors with @hertsu.com emails.", 'ok', 3800);
+  };
+
+  async function transferAdmin(newUid){
+    if(!isAdmin()) return toast("Only Admin can transfer admin.", 'err');
+    if(!confirm("Transfer Admin to this user? This will demote the current admin to Editor.")) return;
+    await runTransaction(ref(db,'settings/adminUid'),()=> newUid);
+    if(adminUid && usersMap[adminUid]) await update(ref(db,`users/${adminUid}`),{role:'editor'});
+    await update(ref(db,`users/${newUid}`),{role:'admin',active:true});
+    await logAction('admin_transferred',{from:adminUid, to:newUid}); toast("Admin transferred.", 'ok');
+  }
+
+  function renderUsersTable(){
+    const tbody=$("#usersTable tbody"); tbody.innerHTML='';
+    for(const [uid,u] of Object.entries(usersMap||{}).sort((a,b)=> (a[1].role||'').localeCompare(b[1].role||''))){
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${escapeHtml(u.name||'')}</td><td>${escapeHtml(u.email||'')}</td><td><select class="input" data-field="role" ${isAdmin()?'':'disabled'}><option value="member" ${u.role==='member'?'selected':''}>Member</option><option value="editor" ${u.role==='editor'?'selected':''}>Editor</option><option value="admin" ${u.role==='admin'?'selected':''}>Admin</option></select></td><td><label class="badge ${u.active!==false?'ok':'err'}">${u.active!==false?'Active':'Deactivated'}</label><label class="soft" style="display:block;margin-top:.3rem"><input type="checkbox" data-field="active" ${u.active!==false?'checked':''}/> Deactivate User</label></td><td style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap"><button class="btn ghost" data-act="makeAdmin" ${u.uid===adminUid?'disabled':''}>Make Admin</button><button class="btn warn" data-act="remove">Remove</button></td>`;
+      tr.querySelector('[data-field="role"]').addEventListener('change',async(e)=>{ const role=e.target.value; if(role==='admin') await transferAdmin(uid); else { await update(ref(db,`users/${uid}`),{role}); await logAction('role_changed',{uid,role}); toast("Role updated.",'ok'); } });
+      tr.querySelector('[data-field="active"]').addEventListener('change',async(e)=>{ const active=e.target.checked; if(uid===currentUser.uid && !active){ e.target.checked=true; return alert("You cannot deactivate yourself."); } await update(ref(db,`users/${uid}`),{active}); await logAction('user_active',{uid,active}); toast(active?"User activated":"User deactivated", active?'ok':'info'); });
+      tr.querySelector('[data-act="makeAdmin"]').addEventListener('click',()=>transferAdmin(uid));
+      tr.querySelector('[data-act="remove"]').addEventListener('click',async()=>{ if(!confirm("Remove this user record? This does not delete their Auth account.")) return; await remove(ref(db,`users/${uid}`)); await logAction('user_removed',{uid}); toast("User removed.",'ok'); });
+      tbody.appendChild(tr);
+    }
+  }
+
+  // ---- Logs ----
+  async function logAction(action, details={}, level='ok'){ try{ const id=push(ref(db,'logs')).key; await set(ref(db,`logs/${id}`),{action,details,by:currentUser?.uid||'system',at:serverTimestamp(),level}); }catch{} }
+
+  // ---- Brand color live change ----
+  $("#brandColor").addEventListener('input',(e)=> document.documentElement.style.setProperty('--primary', e.target.value));
+
+  // ---- Security rules content ----
+  const rulesJSON = `
+{
+  "rules": {
+    ".read": "auth != null",
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users/'+auth.uid+'/role').val() === 'admin' && root.child('users/'+auth.uid+'/active').val() !== false"
+      }
+    },
+    "settings": {
+      "adminUid": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users/'+auth.uid+'/role').val() === 'admin' && root.child('users/'+auth.uid+'/active').val() !== false"
+      }
+    },
+    "content": {
+      "$id": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('users/'+auth.uid+'/active').val() !== false && (root.child('users/'+auth.uid+'/role').val() === 'admin' || root.child('users/'+auth.uid+'/role').val() === 'editor')"
+      }
+    },
+    "logs": {
+      ".read": "auth != null && root.child('users/'+auth.uid+'/role').val() === 'admin'",
+      "$id": { ".write": "auth != null" }
+    }
+  }
+}`;
+  $("#rulesBlock").textContent = rulesJSON.trim();
+
+  // ---- Utils ----
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escapeAttr(s){ return escapeHtml(s); }
+
+  // ---- Initial safe renders ----
+  renderCalendar(); renderContentTable();
+</script>
+
+<!-- ========================== DESIGN-ONLY INTERACTIONS (non-module) ========================== -->
+<script>
+(() => {
+  /* Scroll‑reveal: observe new & existing nodes (works with dynamic calendar/content) */
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: .12 });
+
+  const sel = '.card, .topbar, .nav-item, .cal-cell';
+  const tag = (el) => { if (!el.classList.contains('reveal')) { el.classList.add('reveal'); io.observe(el); } };
+
+  const scan = (root=document) => root.querySelectorAll(sel).forEach(tag);
+  scan(document);
+
+  const mo = new MutationObserver((muts) => {
+    for (const m of muts) {
+      m.addedNodes && m.addedNodes.forEach(n => {
+        if (!(n instanceof Element)) return;
+        if (n.matches(sel)) tag(n);
+        if (n.querySelectorAll) n.querySelectorAll(sel).forEach(tag);
+      });
+    }
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+
+  /* Ripple on every .btn */
+  document.addEventListener('pointerdown', (e) => {
+    const btn = e.target.closest('.btn'); if (!btn) return;
+    const r = document.createElement('span'); r.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    r.style.left = (e.clientX - rect.left) + 'px';
+    r.style.top  = (e.clientY - rect.top)  + 'px';
+    btn.appendChild(r); setTimeout(() => r.remove(), 650);
+  });
+
+  /* Wrap tables for horizontal scrolling on phones (no markup changes needed) */
+  const wrapTables = () => {
+    document.querySelectorAll('table.table').forEach(t => {
+      if (t.parentElement && !t.parentElement.classList.contains('scroll-x')) {
+        const wrap = document.createElement('div'); wrap.className = 'scroll-x';
+        t.parentNode.insertBefore(wrap, t); wrap.appendChild(t);
+      }
+    });
+  };
+  wrapTables();
+
+  /* 3D tilt (subtle) for interactive cards and sign‑in hero */
+  const tilt = (el) => {
+    let rect;
+    const onMove = (e) => {
+      rect = rect || el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - .5;
+      const y = (e.clientY - rect.top) / rect.height - .5;
+      el.style.transform = `rotateX(${(-y*6).toFixed(2)}deg) rotateY(${(x*8).toFixed(2)}deg) translateZ(0)`;
+    };
+    const onLeave = () => { el.style.transform = ''; rect = null; };
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerleave', onLeave);
+  };
+  document.querySelectorAll('.card.hover-rise').forEach(tilt);
+  const authOuter = document.querySelector('#authPage > .card'); if (authOuter) tilt(authOuter);
+
+  /* Magnetic primary CTAs (light touch) */
+  ['#btnSignIn','#quickAddContent','#btnAddEvent'].forEach(sel => {
+    const el = document.querySelector(sel); if (!el) return;
+    let rect;
+    const onMove = (e) => {
+      rect = rect || el.getBoundingClientRect();
+      const x = e.clientX - (rect.left + rect.width/2);
+      const y = e.clientY - (rect.top + rect.height/2);
+      el.style.transform = `translate(${x*0.06}px, ${y*0.06}px)`;
+    };
+    const reset = () => el.style.transform = '';
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerleave', reset);
+    el.addEventListener('blur', reset);
+  });
+})();
+</script>
+
+</body>
+</html>
